@@ -28,16 +28,17 @@
     <div id="result">Waiting for Confluence context…</div>
   </div>
 
-  <script>
+ <script>
   const result = document.getElementById("result");
   let displayedPageId = null;
 
-  function renderContext(context) {
-    const pageId = context?.pageId || context?.contentId;
-    const space = context?.spaceKey || context?.entityKey || context?.spaceId;
+  function renderLocation(location) {
+    const context = location?.context || {};
+    const pageId = context.contentId;
+    const space = context.spaceKey;
 
     if (!pageId) {
-      result.textContent = "Current page context is unavailable.";
+      result.textContent = "The current page could not be identified.";
       return;
     }
 
@@ -46,26 +47,27 @@
     }
 
     displayedPageId = pageId;
+
     result.textContent =
       `Page ID: ${pageId}; Space: ${space || "unknown"}`;
   }
 
-  function refreshContext() {
-    if (window.AP?.context?.getContext) {
-      AP.context.getContext(function (context) {
-        renderContext(context);
-      });
+  function refreshLocation() {
+    if (!window.AP?.navigator?.getLocation) {
+      result.textContent = "The Confluence Navigator API is unavailable.";
       return;
     }
 
-    renderContext(window.AdaptavistBridgeContext?.context);
+    AP.navigator.getLocation(function (location) {
+      renderLocation(location);
+    });
   }
 
   window.addEventListener("load", function () {
-    refreshContext();
+    refreshLocation();
 
-    // Confluence changes pages without necessarily reloading this iframe.
-    window.setInterval(refreshContext, 1000);
+    // Detect Confluence single-page navigation.
+    window.setInterval(refreshLocation, 1000);
   });
 </script>
 </body>

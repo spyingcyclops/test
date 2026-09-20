@@ -29,24 +29,43 @@
   </div>
 
   <script>
-    function showContext() {
-      const context = window.AdaptavistBridgeContext?.context;
-      const result = document.getElementById("result");
+  const result = document.getElementById("result");
+  let attempts = 0;
 
-      if (!context) {
-        result.textContent = "Confluence context is not available.";
-        return;
-      }
+  function readContext() {
+    attempts += 1;
 
+    const bridgeContext = window.AdaptavistBridgeContext;
+    const context = bridgeContext?.context;
+
+    if (context && (context.pageId || context.contentId)) {
       result.textContent =
-        `Page ID: ${context.pageId || context.contentId || "unknown"}; ` +
-        `Space: ${context.entityKey || "unknown"}`;
+        `Page ID: ${context.pageId || context.contentId}; ` +
+        `Space: ${context.entityKey || context.spaceId || "unknown"}`;
+      return;
     }
 
-    window.addEventListener("load", () => {
-      // Give the Adaptavist bridge a moment to initialise.
-      setTimeout(showContext, 500);
-    });
-  </script>
+    if (attempts < 20) {
+      setTimeout(readContext, 250);
+      return;
+    }
+
+    result.innerHTML = `
+      <div>Context was not populated.</div>
+      <pre style="white-space:pre-wrap">${escapeHtml(
+        JSON.stringify(bridgeContext, null, 2)
+      )}</pre>
+    `;
+  }
+
+  function escapeHtml(value) {
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;");
+  }
+
+  window.addEventListener("load", readContext);
+</script>
 </body>
 </html>

@@ -3,11 +3,50 @@
 <head>
   <meta charset="utf-8">
   <title>OEMpire Panel</title>
+
+  <script src="https://assets.hydrogen.sagittarius.connect.product.adaptavist.com/public/js/bridge.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    .panel {
+      padding: 12px;
+      border: 1px solid #579dff;
+      border-radius: 4px;
+      background: #e9f2ff;
+      color: #172b4d;
+    }
+  </style>
 </head>
+
 <body>
-  <div style="padding: 12px; border: 1px solid #579dff; border-radius: 4px; background: #e9f2ff;">
+  <div class="panel">
     <strong>OEMpire proof of concept</strong>
-    <div>The ScriptRunner web panel is loading successfully.</div>
+    <div id="result">Waiting for Confluence context…</div>
   </div>
+
+  <script>
+    function showContext() {
+      const context = window.AdaptavistBridgeContext?.context;
+      const result = document.getElementById("result");
+
+      if (!context) {
+        result.textContent = "Confluence context is not available.";
+        return;
+      }
+
+      result.textContent =
+        `Page ID: ${context.pageId || context.contentId || "unknown"}; ` +
+        `Space: ${context.entityKey || "unknown"}`;
+    }
+
+    window.addEventListener("load", () => {
+      // Give the Adaptavist bridge a moment to initialise.
+      setTimeout(showContext, 500);
+    });
+  </script>
 </body>
 </html>
